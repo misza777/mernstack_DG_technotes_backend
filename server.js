@@ -1,24 +1,30 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const path = require("path");
-const { logger } =require("./middleware/logger");
-const  errorHandler  = require("./middleware/errorHandler");
-const cookieParser = require('cookie-parser')
-const cors = require('cors')
-const corsOptions = require('./config/corsOptions')
-const PORT = process.env.PORT || 3500
+const errorHandler = require("./middleware/errorHandler");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const PORT = process.env.PORT || 3500;
+const connectDB = require("./config/dbConn");
+const mongoose = require("mongoose");
+const { logger, logEvents } = require("./middleware/logger");
 
+console.log(process.env.NODE_ENV);
 
 app.use(logger);
 // cors allowation
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 // __dirname = current directory, help to lok for static files
 app.use("/", express.static(path.join(__dirname, "public")));
 
 app.use("/", require("./routes/root"));
+app.use("/users", require("./routes/userRoutes"));
+app.use("/notes", require("./routes/noteRoutes"));
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -33,6 +39,17 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+mongoose.connection.once("open", () => {
+  console.log("MongoDB connection established successfully");
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+});
+
+mongoose.connection.on("error", (err) => {
+  console.log(err);
+  logEvents(
+    `${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
+    "mongoErrLog.log"
+  );
 });
