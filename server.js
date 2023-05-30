@@ -13,6 +13,8 @@ const { logger, logEvents } = require("./middleware/logger");
 
 console.log(process.env.NODE_ENV);
 
+connectDB();
+
 app.use(logger);
 // cors allowation
 app.use(cors(corsOptions));
