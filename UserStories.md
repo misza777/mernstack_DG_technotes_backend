@@ -1,3 +1,5 @@
+https://github.com/gitdagray/mern_stack_course/tree/main
+https://www.youtube.com/watch?v=CvCiNeLnZ00&t=15012s
 # User Stories for techNotes
 
 1. [ ] Replace current sticky note system

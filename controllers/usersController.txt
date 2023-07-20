@@ -1,12 +1,16 @@
-const User = require("../models/User");
 const Note = require("../models/Note");
+const User = require("../models/User");
+const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
+
+//asyncHandler is a wrapper for async/await error handling instead of try/catch
 
 // @desc Get all users
 // @route GET /users
 // @access Private
-const getAllUsers = async (req, res) => {
-  // Get all users from MongoDB
+const getAllUsers = asyncHandler(async (req, res) => {
+  // Get all users from MongoDB without password, lean giving data like json without methods like save and
+  // exec() to execute the query
   const users = await User.find().select("-password").lean();
 
   // If no users
@@ -15,12 +19,12 @@ const getAllUsers = async (req, res) => {
   }
 
   res.json(users);
-};
+});
 
 // @desc Create new user
 // @route POST /users
 // @access Private
-const createNewUser = async (req, res) => {
+const createNewUser = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
 
   // Confirm data
@@ -28,7 +32,7 @@ const createNewUser = async (req, res) => {
     return res.status(400).json({ message: "All fields are required" });
   }
 
-  // Check for duplicate username
+  // Check for duplicate username, collation to make case insensitive
   const duplicate = await User.findOne({ username })
     .collation({ locale: "en", strength: 2 })
     .lean()
@@ -55,12 +59,12 @@ const createNewUser = async (req, res) => {
   } else {
     res.status(400).json({ message: "Invalid user data received" });
   }
-};
+});
 
 // @desc Update a user
 // @route PATCH /users
 // @access Private
-const updateUser = async (req, res) => {
+const updateUser = asyncHandler(async (req, res) => {
   const { id, username, roles, active, password } = req.body;
 
   // Confirm data
@@ -76,7 +80,7 @@ const updateUser = async (req, res) => {
       .json({ message: "All fields except password are required" });
   }
 
-  // Does the user exist to update?
+  // Does the user exist to update? exec() to execute the query returns promises for async await
   const user = await User.findById(id).exec();
 
   if (!user) {
@@ -106,12 +110,12 @@ const updateUser = async (req, res) => {
   const updatedUser = await user.save();
 
   res.json({ message: `${updatedUser.username} updated` });
-};
+});
 
 // @desc Delete a user
 // @route DELETE /users
 // @access Private
-const deleteUser = async (req, res) => {
+const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.body;
 
   // Confirm data
@@ -137,7 +141,7 @@ const deleteUser = async (req, res) => {
   const reply = `Username ${result.username} with ID ${result._id} deleted`;
 
   res.json(reply);
-};
+});
 
 module.exports = {
   getAllUsers,

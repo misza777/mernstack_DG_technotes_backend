@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("express-async-errors");
 const express = require("express");
 const app = express();
 const path = require("path");
@@ -12,6 +13,7 @@ const mongoose = require("mongoose");
 const { logger, logEvents } = require("./middleware/logger");
 
 console.log(process.env.NODE_ENV);
+//expess-async-errors package to handle async errors - instead of asyncHandler and it just works
 
 connectDB();
 
@@ -25,6 +27,7 @@ app.use(cookieParser());
 app.use("/", express.static(path.join(__dirname, "public")));
 
 app.use("/", require("./routes/root"));
+app.use("/auth", require("./routes/authRoutes"));
 app.use("/users", require("./routes/userRoutes"));
 app.use("/notes", require("./routes/noteRoutes"));
 
